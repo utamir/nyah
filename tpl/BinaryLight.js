@@ -22,14 +22,14 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 				<width>24</width>
 				<height>24</height>
 				<depth>32</depth>
-				<url>img\ic_lightbulb_outline_black_24dp_1x.png</url>
+				<url>${baseurl}/img/ic_lightbulb_outline_black_24dp_1x.png</url>
 			</icon>
 			<icon>
 				<mimetype>image/png</mimetype>
 				<width>48</width>
 				<height>48</height>
 				<depth>32</depth>
-				<url>img\ic_lightbulb_outline_black_24dp_2x.png</url>
+				<url>${baseurl}/img/ic_lightbulb_outline_black_24dp_2x.png</url>
 			</icon>
 		</iconList>
 		<serviceList>

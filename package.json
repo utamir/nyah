@@ -1,0 +1,32 @@
+{
+  "name": "nyah",
+  "version": "1.0.0",
+  "description": "Not Yet Another Hub - plug and play smart home helper",
+  "main": "app.js",
+  "bin": {
+    "nyah": "./app.js"
+  },
+  "dependencies": {
+    "nodejs-websocket": "^1.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utamir/nyah.git"
+  },
+  "keywords": [
+    "smart",
+    "home",
+    "open",
+    "connectivity"
+  ],
+  "author": "Ipsum Domus",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/utamir/nyah/issues"
+  },
+  "homepage": "https://github.com/utamir/nyah#readme"
+}

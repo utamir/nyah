@@ -36,11 +36,11 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 			<service>
 				<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
 				<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>
-				<SCPDURL>SwitchPower.xml</SCPDURL>
-				<controlURL>${baseurl}/${device.id}/control</controlURL>
-				<eventSubURL>${baseurl}/${device.id}/event</eventSubURL>
+				<SCPDURL>/SwitchPower.xml</SCPDURL>
+				<controlURL>/${device.id}/control</controlURL>
+				<eventSubURL>/${device.id}/event</eventSubURL>
 			</service>
 		</serviceList>
-		<presentationURL>${baseurl}/${device.id}</presentationURL>
+		<presentationURL>/${device.id}</presentationURL>
 	</device>
 </root>`

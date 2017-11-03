@@ -58,31 +58,6 @@ if (cluster.isWorker) {*/
   deviceManager.invalidate();
  });
  
- let ssdp = require('./lib/UPnP').ssdp;
- let onUdpMessage = function(msg, sender){
-  let res = ssdp.decode(msg);
-  log.debug(['UDP','MULTI','%j', '%o'].join(log.separator),sender,res);
-  if(res['m-search']){
-   deviceManager.search(res['st'],sender);
-  } else if(res['notify']){
-   //TODO: Should i handle notify here?
-   log.info('Notify - replace %s',res);
-   //deviceManager.notify();
-  } else {
-   log.debug(['UDP','MULTI', 'Unknown request %s',res].join(log.separator));
-  }
- }
- let udp = require('dgram').createSocket({
-  type: "udp4",
-  reuseAddr: true
- }, onUdpMessage).bind(ssdp.port, ()=>{
-  udp.setMulticastTTL(ssdp.ttl);
-  udp.setBroadcast(true);
-  udp.setMulticastInterface(config.mgrip);
-  udp.addMembership(ssdp.address, config.mgrip);
-  udp.setMulticastLoopback(true);
- });
- 
 
 
 //}

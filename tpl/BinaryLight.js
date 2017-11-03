@@ -22,14 +22,14 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 				<width>24</width>
 				<height>24</height>
 				<depth>32</depth>
-				<url>${baseurl}/img/ic_lightbulb_outline_black_24dp_1x.png</url>
+				<url>/img/ic_lightbulb_outline_black_24dp_1x.png</url>
 			</icon>
 			<icon>
 				<mimetype>image/png</mimetype>
 				<width>48</width>
 				<height>48</height>
 				<depth>32</depth>
-				<url>${baseurl}/img/ic_lightbulb_outline_black_24dp_2x.png</url>
+				<url>/img/ic_lightbulb_outline_black_24dp_2x.png</url>
 			</icon>
 		</iconList>
 		<serviceList>
@@ -37,10 +37,10 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 				<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
 				<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>
 				<SCPDURL>/SwitchPower.xml</SCPDURL>
-				<controlURL>/${device.id}/control</controlURL>
-				<eventSubURL>/${device.id}/event</eventSubURL>
+				<controlURL>/control</controlURL>
+				<eventSubURL>/event</eventSubURL>
 			</service>
 		</serviceList>
-		<presentationURL>/${device.id}</presentationURL>
+		<presentationURL>/${device.id}/${device.id}</presentationURL>
 	</device>
 </root>`

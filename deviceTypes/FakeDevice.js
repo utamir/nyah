@@ -16,7 +16,7 @@ function FakeDevice(deviceManager) {
   }
  }
 });
- 
+
  //create only device descriptos of a fake type
  this.ids = [];
  this.ids.push('deadbeef-fa11-abad-a555-babefacecafe');
@@ -33,6 +33,17 @@ function FakeDevice(deviceManager) {
 	upc: '884224355040',	 
 	type: 'BinaryLight'		 
  });
+ //create fake event loop
+ let fakeEvent = ()=>{
+   let target = dm.devices.get(this.ids[0]);
+   target.Status = !(target.Status || false);
+   dm.emit('deviceEvent',{
+    id: this.ids[0],
+    key: 'Status',
+    value: target.Status
+   });
+ };
+ setInterval(fakeEvent,5000);
  
  this.ids.push('deadbeef-fa11-abad-a555-facecafebabe');
  dm.devices.set(this.ids[1], {

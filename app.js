@@ -38,13 +38,14 @@ if (cluster.isWorker) {*/
    let err, resp;
    [err, resp] = await to(util.promisify(deviceManager.handle.bind(deviceManager))(req,res));
    if(err) {                            //First try handle by device methods
+    log.debug(['HTTP','Device method handle error: %s'].join(log.separator),err);
     let file = './tpl'+req.url; 		//Then check if it is physical file
     [err, resp] = await to(util.promisify(fs.stat)(file));
 	if(resp && resp.isFile()){
 	 log.debug(['HTTP','RES',file].join(log.separator));
      fs.createReadStream(file).pipe(res);
     } else {							//If nothing, give up
-     log.debug(['HTTP','ERR', 'Unhandled request ' + req.url].join(log.separator));
+     log.debug(['HTTP','ERR', 'Unhandled request ' + req.url, 'Error: '+err].join(log.separator));
      res.writeHead(404);
 	 res.end();
 	}

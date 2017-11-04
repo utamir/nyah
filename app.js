@@ -7,6 +7,7 @@ var fs = require('fs');
 var util = require('util');
 
 log.setLevel(log.levels.INFO);
+log.oneLine = true;
 
 /*process.on('uncaughtException', function(err) {
  log.debug("uncaughtException");

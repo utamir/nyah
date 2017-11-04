@@ -3,9 +3,10 @@
 var utils = require('./lib/Utils');
 var log = utils.log;
 var fs = require('fs');
+var util = require('util');
 
 log.setLevel(log.levels.INFO);
- 
+
 /*process.on('uncaughtException', function(err) {
  log.debug("uncaughtException");
  log.error(err.stack);
@@ -27,13 +28,14 @@ if (cluster.isWorker) {*/
  var tpl = utils.get;
 
  var deviceManager = require('./lib/DeviceManager')('./deviceTypes', `http://${config.mgrip}:${config.mgrport}`);
- require("http").createServer(function(req,res){
+ require("http").createServer(async function(req,res){
   log.debug(['HTTP','REQ',req.url].join(log.separator));
   if(req.url == '/logs') {
    res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
    res.end(tpl('log',{ip: config.mgrip, port: config.mgwsport}));
   } else {
-   if(!deviceManager.handle(req,res)) { //First try handle by device methods
+   let handler = util.promisify(deviceManager.handle.bind(deviceManager));
+   if(!(await handler(req,res))) { //First try handle by device methods
     let file = './tpl'+req.url; 		//Then check if it is physical file
 	let fstat = null;
 	try {

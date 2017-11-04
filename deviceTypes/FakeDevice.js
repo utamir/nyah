@@ -53,7 +53,6 @@ function FakeDevice(deviceManager) {
 function handleAction(e) {
     log.info('Requested action: %s(%j) for %s',e.action,e.args,e.id);
     //handle fake methods
-    console.log(dm);
     let target = dm.devices.get(e.id);
     if(!target) {
      log.error('Target %s not found',e.id);

@@ -2,6 +2,7 @@
 'use strict';
 var utils = require('./lib/Utils');
 var log = utils.log;
+var to = utils.to;
 var fs = require('fs');
 var util = require('util');
 
@@ -34,14 +35,12 @@ if (cluster.isWorker) {*/
    res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
    res.end(tpl('log',{ip: config.mgrip, port: config.mgwsport}));
   } else {
-   let handler = util.promisify(deviceManager.handle.bind(deviceManager));
-   if(!(await handler(req,res))) { //First try handle by device methods
+   let err, resp;
+   [err, resp] = await to(util.promisify(deviceManager.handle.bind(deviceManager))(req,res));
+   if(err) {                            //First try handle by device methods
     let file = './tpl'+req.url; 		//Then check if it is physical file
-	let fstat = null;
-	try {
-	 fstat = fs.statSync(file);
-	} catch (e) {}
-    if(fstat && fstat.isFile()){
+    [err, resp] = await to(util.promisify(fs.stat)(file));
+	if(resp && resp.isFile()){
 	 log.debug(['HTTP','RES',file].join(log.separator));
      fs.createReadStream(file).pipe(res);
     } else {							//If nothing, give up
@@ -49,6 +48,8 @@ if (cluster.isWorker) {*/
      res.writeHead(404);
 	 res.end();
 	}
+   } else {
+    log.debug(['HTTP','RES',resp].join(log.separator));
    }
   }
  }).listen(config.mgrport, config.mgrip);

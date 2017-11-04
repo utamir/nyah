@@ -1,12 +1,13 @@
 exports.get = (device, baseurl) => `<?xml version="1.0"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0">
-	<specVersion>
-		<major>1</major>
-		<minor>0</minor>
-	</specVersion>
-	<device>
-		<deviceType>urn:schemas-upnp-org:device:BinaryLight:0.9</deviceType>
-		<friendlyName>${device.name}</friendlyName>
+    <specVersion>
+        <major>1</major>
+        <minor>0</minor>
+    </specVersion>
+    <URLBase>${baseurl}</URLBase>
+    <device>
+        <deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>
+        <friendlyName>${device.name}</friendlyName>
 		<manufacturer>${device.manufacturer}</manufacturer>
 		<manufacturerURL>${device.manufacturerurl}</manufacturerURL>
 		<modelDescription>${device.desc}</modelDescription>
@@ -16,31 +17,22 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 		<serialNumber>${device.serialnumber}</serialNumber>
 		<UDN>uuid:${device.id}</UDN>
 		<UPC>${device.upc}</UPC>
-		<iconList>
+        <iconList>
 			<icon>
 				<mimetype>image/png</mimetype>
 				<width>24</width>
 				<height>24</height>
 				<depth>32</depth>
-				<url>/img/ic_lightbulb_outline_black_24dp_1x.png</url>
+				<url>${baseurl}/img/ic_developer_mode_black_24dp_1x.png</url>
 			</icon>
 			<icon>
 				<mimetype>image/png</mimetype>
 				<width>48</width>
 				<height>48</height>
 				<depth>32</depth>
-				<url>/img/ic_lightbulb_outline_black_24dp_2x.png</url>
+				<url>${baseurl}/img/ic_developer_mode_black_24dp_2x.png</url>
 			</icon>
 		</iconList>
-		<serviceList>
-			<service>
-				<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>
-				<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>
-				<SCPDURL>/SwitchPower.xml</SCPDURL>
-				<controlURL>/${device.id}/control</controlURL>
-				<eventSubURL>/${device.id}/event</eventSubURL>
-			</service>
-		</serviceList>
-		<presentationURL>${baseurl}/${device.id}</presentationURL>
-	</device>
+        <presentationURL>${baseurl}/${device.id}</presentationURL>
+    </device>
 </root>`

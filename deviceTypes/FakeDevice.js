@@ -33,6 +33,7 @@ function FakeDevice(deviceManager) {
 	upc: '884224355040',	 
 	type: 'BinaryLight'		 
  });
+ log.info('Device %s added',this.ids[0]);
  //create fake event loop
  let fakeEvent = ()=>{
    let target = dm.devices.get(this.ids[0]);
@@ -45,6 +46,8 @@ function FakeDevice(deviceManager) {
  };
  setInterval(fakeEvent,5000);
  
+ //delay load next device
+ setTimeout(()=>{
  this.ids.push('deadbeef-fa11-abad-a555-facecafebabe');
  dm.devices.set(this.ids[1], {
     id: this.ids[1],
@@ -59,6 +62,9 @@ function FakeDevice(deviceManager) {
 	upc: '884224355041',	 
 	type: 'Basic'		 
  });
+ dm.emit('deviceAdded',{id: this.ids[1]});
+ log.info('Device %s added',this.ids[1]);
+ },50000);
 }
 
 function handleAction(e) {

@@ -35,6 +35,11 @@ if (cluster.isWorker) {*/
   if(req.url == '/logs') {
    res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
    res.end(tpl('log',{ip: config.mgrip, port: config.mgwsport}));
+  } else if(req.url == '/add'){
+   res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
+   res.write('<html><head><title>Searching new device</title></head><body>');
+   await deviceManager.discovery(d=>res.write(`<div><span>Start searching for ${d}...</span>`),d=>res.write(`<span>End searching for ${d}...</span></div>`));
+   res.end('</body></html>');
   } else {
    let err, resp;
    [err, resp] = await to(util.promisify(deviceManager.handle.bind(deviceManager))(req,res));

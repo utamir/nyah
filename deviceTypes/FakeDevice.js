@@ -1,12 +1,9 @@
-var emitter = require('events').EventEmitter;
-var inherits = require('util').inherits;
 var log = require('../lib/Utils').log;
 var dm;
 module.exports = FakeDevice;
 function FakeDevice(deviceManager) {
  if(! (this instanceof FakeDevice)) return new FakeDevice(deviceManager);
  dm = deviceManager;
- emitter.call(this);
  
  dm.on('action',e=>{
   for(let id of this.ids){
@@ -44,7 +41,7 @@ function FakeDevice(deviceManager) {
     value: target.Status
    });
  };
- setInterval(fakeEvent,5000);
+ setInterval(fakeEvent,60000);
  
  //delay load next device
  setTimeout(()=>{
@@ -108,6 +105,4 @@ function handleAction(e) {
     log.debug('Event: %s, %j',evt, eargs);    
     dm.emit(evt, eargs);
 }
-
-inherits(FakeDevice, emitter);
 

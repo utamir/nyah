@@ -81,13 +81,15 @@ var initServer = function(){
    }
   });
   conn.on("close", function (code, reason) {
-   log.info(['SONOFF','WS','OFFLINE','Connection to ${cid} was closed',code, reason].join(log.separator));
-   let targets = dm.devices.values().find(d=>d.cid == cid);
-   if(targets.length > 0){
-    let target = target[0];
-    dm.emit('deviceRemoved',{id: target.id});
+   log.info(['SONOFF','WS','OFFLINE',`Connection to ${cid} was closed`,code, reason].join(log.separator));
+   for(let d of dm.devices.values()){
+    if(d.cid == cid){
+     dm.emit('deviceRemoved',{id: d.id});
+     break;
+    }
    }
   });
+  conn.on("error", err=>log.error(['SONOFF','WS',err].join(log.separator)));
 }).listen(wsport,config.uapip);
 }
 var handleAction = function(e,cid){

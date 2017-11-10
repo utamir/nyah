@@ -80,6 +80,14 @@ var initServer = function(){
     log.error(['SONOFF','WS', 'ERR', e].join(log.separator));
    }
   });
+  conn.on("close", function (code, reason) {
+   log.info(['SONOFF','WS','OFFLINE','Connection to ${cid} was closed',code, reason].join(log.separator));
+   let targets = dm.devices.values().find(d=>d.cid == cid);
+   if(targets.length > 0){
+    let target = target[0];
+    dm.emit('deviceRemoved',{id: target.id});
+   }
+  });
 }).listen(wsport,config.uapip);
 }
 var handleAction = function(e,cid){
@@ -124,7 +132,7 @@ var handleWSRequest = function(data, cid){
   "deviceid" : data.deviceid,
   "apikey" : apiKey + data.deviceid
  };
- log.debug(['SONOFF','WS','REQ','%j'].join(log.separator),data);
+ log.debug(['SONOFF','WS','REQ','%s','%j'].join(log.separator),data.action?data.action.toUpperCase():'SEQ',data);
  let id; 
  if(data.action) {
   switch(data.action){

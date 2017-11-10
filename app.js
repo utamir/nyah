@@ -8,6 +8,7 @@ var util = require('util');
 
 log.setLevel(log.levels.INFO);
 log.oneLine = true;
+log.noLog = ['UDP','SSDP'];
 
 /*process.on('uncaughtException', function(err) {
  log.debug("uncaughtException");

@@ -5,10 +5,14 @@ var log = utils.log;
 var to = utils.to;
 var fs = require('fs');
 var util = require('util');
+var p = require('path');
 
-log.setLevel(log.levels.INFO);
+let uid = parseInt(process.env.SUDO_UID);
+if (uid) process.setuid(uid);
+
+log.setLevel(log.levels.DEBUG);
 log.oneLine = true;
-log.noLog = ['UDP','SSDP'];
+//log.noLog = ['UDP','SSDP'];
 
 /*process.on('uncaughtException', function(err) {
  log.debug("uncaughtException");
@@ -31,7 +35,7 @@ if (cluster.isWorker) {*/
  var tpl = utils.get;
 
  var deviceManager = require('./lib/DeviceManager')('./deviceTypes', `http://${config.mgrip}:${config.mgrport}`);
- require("http").createServer(async function(req,res){
+ let http = require("http").createServer(async function(req,res){
   log.debug(['HTTP','REQ',req.url].join(log.separator));
   if(req.url == '/logs') {
    res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
@@ -46,11 +50,16 @@ if (cluster.isWorker) {*/
    [err, resp] = await to(util.promisify(deviceManager.handle.bind(deviceManager))(req,res));
    if(err) {                            //First try handle by device methods
     log.debug(['HTTP','Device method handle error: %s'].join(log.separator),err);
-    let file = './tpl'+req.url; 		//Then check if it is physical file
+    let file = p.resolve(p.dirname(require.main.filename),'./tpl'+req.url); 		//Then check if it is physical file
     [err, resp] = await to(util.promisify(fs.stat)(file));
 	if(resp && resp.isFile()){
 	 log.debug(['HTTP','RES',file].join(log.separator));
-     fs.createReadStream(file).pipe(res);
+     let stream = fs.createReadStream(file);
+     stream.pipe(res);
+     stream.on('close',()=>{ 
+      //fs.unlinkSync(file);
+      res.end();
+     });
     } else {							//If nothing, give up
      log.debug(['HTTP','ERR', 'Unhandled request ' + req.url, 'Error: '+err].join(log.separator));
      res.writeHead(404);
@@ -60,7 +69,9 @@ if (cluster.isWorker) {*/
     log.debug(['HTTP','RES',resp].join(log.separator));
    }
   }
- }).listen(config.mgrport, config.mgrip);
+ });
+ http.setTimeout(2000);
+ http.listen(config.mgrport, config.mgrip);
  //TODO: Handle keep alive
  let lgs = require("nodejs-websocket").createServer().listen(config.mgwsport, config.mgrip);
  process.on('log',msg=>lgs.connections.forEach(c=>c.sendText(msg)));

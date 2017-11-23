@@ -166,8 +166,8 @@ var handleWSRequest = function(data, cid){
     id = apiKey + data.deviceid;
     var target = dm.devices.get(id);
     res.params = {};
-    res.params.forEach(p=>{
-     res.params[p] = device[p];
+    data.params.forEach(p=>{
+     res.params[p] = target[p];
     });
    break;
    default:

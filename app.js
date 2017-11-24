@@ -54,14 +54,23 @@ if (cluster.isWorker) {*/
     [err, resp] = await to(util.promisify(fs.stat)(file));
 	if(resp && resp.isFile()){
 	 log.debug(['HTTP','RES',file].join(log.separator));
-     let stream = fs.createReadStream(file);
-     stream.pipe(res);
-     stream.on('close',()=>{ 
-      //fs.unlinkSync(file);
-      res.end();
-     });
+     let f,fe;
+     [fe,f] = await to(util.promisify(fs.readFile)(file));
+     if(f) {
+      let ct = {'Content-Type': 'application/octet-stream'};
+      switch(p.extname(file)){
+       case '.xml': ct = {'Content-Type': 'text/xml; charset="utf-8"'}; break;
+       case '.png': ct = {'Content-Type': 'image/png'}; break;
+       default: log.warn(['HTTP','RES','Unknown content type for %s'].join(log.separator),p.extname(file)); break;
+      }
+      ct['Content-Length'] = Buffer.byteLength(f);
+      res.writeHead(200,ct);
+      res.end(f);
+     } else {
+      log.warn(['HTTP','ERR','Unable to response file %s',fe].join(log.separator),file);
+     }
     } else {							//If nothing, give up
-     log.debug(['HTTP','ERR', 'Unhandled request ' + req.url, 'Error: '+err].join(log.separator));
+     log.warn(['HTTP','ERR', 'Unhandled request ' + req.url, 'Error: '+err].join(log.separator));
      res.writeHead(404);
 	 res.end();
 	}

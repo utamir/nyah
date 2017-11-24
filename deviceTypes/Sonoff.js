@@ -156,6 +156,8 @@ var handleWSRequest = function(data, cid){
     id = apiKey + data.deviceid;
     var target = dm.devices.get(id);
     target.Status = (data.params.switch == 'on');
+    //sync on target status
+    target.Target = target.Status;
     dm.emit('deviceEvent',{
      id: id,
      key: 'Status',

@@ -84,7 +84,8 @@ var initServer = function(){
    log.info(['SONOFF','WS','OFFLINE',`Connection to ${cid} was closed`,code, reason].join(log.separator));
    for(let d of dm.devices.values()){
     if(d.cid == cid){
-     dm.emit('deviceRemoved',{id: d.id});
+     //dm.emit('deviceRemoved',{id: d.id});
+     d.cid = null;
      break;
     }
    }
@@ -163,6 +164,10 @@ var handleWSRequest = function(data, cid){
      key: 'Status',
      value: target.Status
     });
+    if(!target.cid) { 
+     log.warn(['SONOFF','WS','REQ','UPDATE', 'No sid found for %j. Associating cid: %s'].join(log.separator),target,cid);
+     target.cid = cid;
+    }
    break;
    case 'query':
     id = apiKey + data.deviceid;
@@ -171,6 +176,10 @@ var handleWSRequest = function(data, cid){
     data.params.forEach(p=>{
      res.params[p] = target[p];
     });
+    if(!target.cid) { 
+     log.warn(['SONOFF','WS','REQ','QUERY','No sid found for %j. Associating cid: %s'].join(log.separator),target,cid);
+     target.cid = cid;
+    }
    break;
    default:
     log.warn(['SONOFF','WS','Unknown request: %j'].join(log.separator),data);
@@ -180,6 +189,10 @@ var handleWSRequest = function(data, cid){
   //TODO: Actually we have to listen to "sequence" respose for command execution, but in reality, it is not required due to SSDP spec
   id = apiKey + data.deviceid;
   var target = dm.devices.get(id);
+  if(!target.cid) { 
+   log.warn(['SONOFF','WS','REQ','SEQUENCE','No sid found for %j. Associating cid: %s'].join(log.separator),target,cid);
+   target.cid = cid;
+  }
   //TODO: Here we just assing requested value to the actual
   
   target.Status = target.Target;

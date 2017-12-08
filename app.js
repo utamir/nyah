@@ -45,7 +45,68 @@ if (cluster.isWorker) {*/
    res.write('<html><head><title>Searching new device</title></head><body>');
    await deviceManager.discovery(d=>res.write(`<div><span>Start searching for ${d}...</span>`),d=>res.write(`<span>End searching for ${d}...</span></div>`));
    res.end('</body></html>');
-  } else {
+  } else if(req.url.startsWith('/test')){
+   //this is test API to perform operation.
+   //Syntax is /test/{action}/{device id}/{operation}-{params}/{optional: action arguments cron scheduler separated by _}
+   //Sample: /test/cron/111-222-333-444/SetTarget-newTargetValue:1/00_05_*_*_*_*/ = set target true every 5 minute
+   //Sample: /test/cron/111-222-333-444/SetTarget-newTargetValue:1/ = removes previous cron task
+   let r = req.url.split('/');
+   if(r.length < 4) {
+    res.writeHead(500,{"Content-Type": "text/html; charset=utf-8"});
+    res.end();
+    log.warn(['TEST','Invalid arguments','%j'].join(log.separator),r);
+    return;
+   }
+   res.writeHead(200,{"Content-Type": "text/html; charset=utf-8"});
+   res.write('<html><head><title>Test device</title></head><body>');
+   let cmd = r[2].toLowerCase();
+   let id = r[3];
+   log.info(['TEST',cmd,id].join(log.separator));
+   switch(cmd){
+    case 'cron': 
+     let device = deviceManager.devices.get(id);
+     if(device){
+      this.cron = this.cron || {};
+      let oper = r[4].split('-');
+      let crn = r[5]?r[5].split('_'):null;
+      let jid = utils.checksum(`${id} ${r[4]}`);
+      if(crn){
+       res.write((!this.cron[jid]?`<h2>Create`:`<h2>Update`)+` cron job ${r[4]} - ${crn}<br/>(job: ${jid})</h2>`);
+       if(this.cron[jid]) {
+        this.cron[jid].stop();
+        this.cron[jid] = null;
+       }
+       this.cron[jid] = new require('./lib/cron').CronJob(crn.join(' '),()=>{
+        let eid = utils.uid();
+        deviceManager.once('action-'+eid,e=>{
+         log.info(['TEST',cmd,'Command executed'].join(log.separator));
+        });
+        let args = {};
+        if(oper.length > 1){
+         oper[1].split(';').forEach(p=>{
+          let o = p.split(':');
+          args[o[0]] = o[1];
+         });
+        }
+        deviceManager.emit('action', {
+         id: id,
+         action: oper[0],
+         args: args,
+         eid: eid
+        });
+       });       
+      } else {
+       this.cron[jid] = crn;
+       res.write(`<h2>Remove cron job ${r[4]}<br/>(job: ${jid})</h2>`);
+      }
+     } else {
+      res.write(`<h2>Unknown device ${id}</h2>`);
+     }     
+    break;
+    default: res.write(`<h2>Unknown command ${cmd}</h2>`); break;
+   }
+   res.end('</body></html>');
+  }else {
    let err, resp;
    [err, resp] = await to(util.promisify(deviceManager.handle.bind(deviceManager))(req,res));
    if(err) {                            //First try handle by device methods

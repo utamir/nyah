@@ -48,29 +48,13 @@ var initServer = function(){
  }).on('error', e=>log.error(['SONOFF','HTTPS',e].join(log.separator))).listen(hsport,config.uapip);
  
  log.info(['SONOFF','WS','Starting WS server'].join(log.separator));
- require("nodejs-websocket").createServer({
+ let wsrv = require("nodejs-websocket").createServer({
   secure : true,
   key: config.sslkey,
   cert: config.sslcert,
  },function (conn) {
   let cid = conn.socket.remoteAddress+':'+conn.socket.remotePort;
-  log.debug(['SONOFF','WS','REQ', cid].join(log.separator));
-  dm.on('action',e=>{
-   let target = handleAction(e,cid); 
-   if(target){
-    let seqid = Math.floor(new Date() / 1000).toString();
-    let res = {
-     "apikey" : apiKey + target.deviceid,
-     "action" : 'update',
-     "deviceid" : target.deviceid,
-     "sequence" : seqid,
-     "params" : {'switch' : (target.Target?'on':'off')}
-    };
-    var r = JSON.stringify(res);
-	conn.sendText(r);
-    log.debug(['SONOFF','WS','REQ',r].join(log.separator));
-   }
-  });
+  log.debug(['SONOFF','WS','CONN', cid].join(log.separator));  
   conn.on("text", function (str) {
    try {
     var data = JSON.parse(str);
@@ -92,11 +76,31 @@ var initServer = function(){
   });
   conn.on("error", err=>log.error(['SONOFF','WS',err].join(log.separator)));
 }).listen(wsport,config.uapip);
+dm.on('action',e=>{
+ wsrv.connections.forEach(conn => {
+  let cid = conn.socket.remoteAddress+':'+conn.socket.remotePort;
+  let target = handleAction(e,cid); 
+  if(target){
+   let seqid = Math.floor(new Date() / 1000).toString();
+   let res = {
+    "apikey" : apiKey + target.deviceid,
+    "action" : 'update',
+    "deviceid" : target.deviceid,
+    "sequence" : seqid,
+    "params" : {'switch' : (target.Target?'on':'off')}
+   };
+   var r = JSON.stringify(res);
+   conn.sendText(r);
+   log.debug(['SONOFF','WS','REQ',r].join(log.separator));
+  }
+ });
+});
 }
 var handleAction = function(e,cid){
  log.info(['SONOFF','ACTION',e.action,'%j'].join(log.separator),e.args);
  let target = dm.devices.get(e.id);
  if(target && target.cid == cid) {
+  log.debug(['SONOFF','ACTION',e.action,'%j','Relevant target'].join(log.separator),e.args); 
   let oper = [];
   switch (e.action){
    case 'GetStatus':
@@ -125,6 +129,7 @@ var handleAction = function(e,cid){
   dm.emit(evt, eargs);
   return target;
  } else {
+  log.debug(['SONOFF','ACTION',e.action,'%j','Irrelevant target %s'].join(log.separator),e.args,cid); 
   return;
  }
 }
@@ -165,7 +170,7 @@ var handleWSRequest = function(data, cid){
      value: target.Status
     });
     if(!target.cid) { 
-     log.warn(['SONOFF','WS','REQ','UPDATE', 'No sid found for %j. Associating cid: %s'].join(log.separator),target,cid);
+     log.warn(['SONOFF','WS','REQ','UPDATE', 'No cid found for %j. Associating cid: %s'].join(log.separator),target,cid);
      target.cid = cid;
     }
    break;

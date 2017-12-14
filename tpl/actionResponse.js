@@ -7,4 +7,4 @@ exports.get = (action, serviceType, args) => `<?xml version="1.0"?>
             ${args}
         </u:${action}Response>
     </s:Body>
-</s:Envelope>`;
+</s:Envelope>`

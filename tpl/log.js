@@ -21,12 +21,12 @@ li {
 <script>
 var connection
 window.addEventListener("load", function () {
-	connection = new WebSocket("ws://${address.ip}:${address.port}")	
-	connection.onmessage = function (event) {
-		var li = document.createElement("li")
-		li.textContent = event.data
-		document.getElementsByTagName('ul')[0].prepend(li)
-	}
+connection = new WebSocket("ws://${address.ip}:${address.port}")
+connection.onmessage = function (event) {
+var li = document.createElement("li")
+li.textContent = event.data
+document.getElementsByTagName('ul')[0].prepend(li)
+}
 })
 </script>
 </head>

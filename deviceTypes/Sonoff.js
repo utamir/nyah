@@ -116,7 +116,7 @@ var handleAction = function (e, cid) {
         })
         break
       case 'SetTarget':
-        target.Target = e.args['newTargetValue'] === true
+        target.Target = (e.args['newTargetValue'] === true || e.args['newTargetValue'] === '1' || e.args['newTargetValue'] === 1)
         break
       default: log.warn(['SONOFF', 'ACTION', `Unknown action ${e.action}`].join(log.separator)); break
     }

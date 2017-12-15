@@ -69,7 +69,7 @@ if (cluster.isWorker) {
       if (r.length < 3) {
         res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'})
         res.end('{"error": {"code": 500, "message": "Invalid arguments"}}')
-        log.warn(['ACTION', 'Invalid arguments', '%j'].join(log.separator), r)        
+        log.warn(['ACTION', 'Invalid arguments', '%j'].join(log.separator), r)
       } else {
         let id = r[2]
         let ac = r[3]

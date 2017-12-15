@@ -46,7 +46,44 @@ if (cluster.isWorker) {
       await deviceManager.discovery(d => res.write(`<div><span>Start searching for ${d}...</span>`), d => res.write(`<span>End searching for ${d}...</span></div>`))
       res.end('</body></html>')
     } else if (req.url === '/devices') {
-
+      res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'})
+      let devices = []
+      for (let device of deviceManager.devices.values()) {
+        devices.push({
+          id: device.id,
+          name: device.name,
+          manufacturer: device.manufacturer,
+          description: device.desc,
+          model: device.model,
+          upnptype: device.upnpType,
+          capabilities: device.capabilities
+        })
+      }
+      res.end(JSON.stringify(devices))
+    } else if (req.url.startsWith('/action')) {
+   // this is action API to perform operation.
+   // Syntax is /action/{device id}/{action}/{optional: action arguments}
+   // Sample: /action/111-222-333-444/on
+   // Sample: /action/111-222-333-444/timer/00_05_*_*_*_* = send to target "timer : 00 05 * * * * "
+      let r = req.url.split('/')
+      if (r.length < 3) {
+        res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'})
+        res.end('{"error": {"code": 500, "message": "Invalid arguments"}}')
+        log.warn(['ACTION', 'Invalid arguments', '%j'].join(log.separator), r)        
+      } else {
+        let id = r[2]
+        let ac = r[3]
+        let args = r.length === 4 ? r[4] : null
+        res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'})
+        log.info(['ACTION', ac, id].join(log.separator))
+        let device = deviceManager.devices.get(id)
+        if (device) {
+          let ex = await deviceManager.action(id, ac, args)
+          res.end(ex || '{"error": {"code": 200, "message": "Unable to perform action"}}')
+        } else {
+          res.end('{"error": {"code": 200, "message": "Unknown device"}}')
+        }
+      }
     } else if (req.url.startsWith('/test')) {
    // this is test API to perform operation.
    // Syntax is /test/{action}/{device id}/{operation}-{params}/{optional: action arguments cron scheduler separated by _}
@@ -91,7 +128,7 @@ if (cluster.isWorker) {
                     args[o[0]] = o[1]
                   })
                 }
-                deviceManager.emit('action', {
+                deviceManager.emit('upnpaction', {
                   id: id,
                   action: oper[0],
                   args: args,

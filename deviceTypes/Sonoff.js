@@ -5,13 +5,15 @@ var to = utils.to
 var config = require('../config')
 var exec = require('child_process').exec
 var dm
+var wsrv
 var wsport = 8444
 var hsport = 8443
+var moduleName
 module.exports = Sonoff
 function Sonoff (deviceManager) {
   if (!(this instanceof Sonoff)) return new Sonoff(deviceManager)
   dm = deviceManager
-
+  moduleName = this.constructor.name
   initServer()
 }
 
@@ -48,7 +50,7 @@ var initServer = function () {
   }).on('error', e => log.error(['SONOFF', 'HTTPS', e].join(log.separator))).listen(hsport, config.uapip)
 
   log.info(['SONOFF', 'WS', 'Starting WS server'].join(log.separator))
-  let wsrv = require('nodejs-websocket').createServer({
+  wsrv = require('nodejs-websocket').createServer({
     secure: true,
     key: config.sslkey,
     cert: config.sslcert
@@ -76,10 +78,10 @@ var initServer = function () {
     })
     conn.on('error', err => log.error(['SONOFF', 'WS', err].join(log.separator)))
   }).listen(wsport, config.uapip)
-  dm.on('action', e => {
+  dm.on('upnpaction', e => {
     wsrv.connections.forEach(conn => {
       let cid = conn.socket.remoteAddress + ':' + conn.socket.remotePort
-      let target = handleAction(e, cid)
+      let target = handleUpnpAction(e, cid)
       if (target) {
         let seqid = Math.floor(new Date() / 1000).toString()
         let res = {
@@ -96,13 +98,14 @@ var initServer = function () {
     })
   })
 }
-var handleAction = function (e, cid) {
+var handleUpnpAction = function (e, cid) {
   log.info(['SONOFF', 'ACTION', e.action, '%j'].join(log.separator), e.args)
   let target = dm.devices.get(e.id)
   if (target && target.cid === cid) {
     log.debug(['SONOFF', 'ACTION', e.action, '%j', 'Relevant target'].join(log.separator), e.args)
     let oper = []
     switch (e.action) {
+      // UPNP actions
       case 'GetStatus':
         oper.push({
           key: 'ResultStatus',
@@ -120,7 +123,7 @@ var handleAction = function (e, cid) {
         break
       default: log.warn(['SONOFF', 'ACTION', `Unknown action ${e.action}`].join(log.separator)); break
     }
-    let evt = `action-${e.eid}`
+    let evt = `upnpaction-${e.eid}`
     let eargs = {
       id: e.id,
       response: oper,
@@ -208,6 +211,9 @@ var handleWSRequest = function (data, cid) {
       key: 'Status',
       value: target.Status
     })
+    dm.emit('sonoff-' + data.sequence, {
+      id: id
+    })
   }
   log.debug(['SONOFF', 'WS', 'RES', '%j'].join(log.separator), res)
   return res
@@ -227,13 +233,69 @@ var initializeDevice = function (device) {
     device.desc = 'Sonoff wifi smart home device'
   // device model is already in place
     device.type = 'BinaryLight' // TODO: Replace by decent device type based on type/model rather then binary switch
+    // Values can be standard:
+    // device.capabilities = ['switch']
+    // Or custom
+    device.capabilities = [{
+      'attributes': [{'attribute': 'switch', 'type': 'bool'}],
+      'actions': ['on', 'off']
+      // alternative is [{'action': 'on'}, {'action': 'off'}]
+    }]
+    // END
     device.serialnumber = device.deviceid
+    // TODO: automate constructor name extraction
+    device.source = moduleName
     dm.devices.set(device.id, device)
     dm.emit('deviceAdded', {id: device.id})
     log.info(['SONOFF', 'SETUP', 'UpNP device %s is initialized'].join(log.separator), id)
   } else {
     log.info(['SONOFF', 'SETUP', 'UpNP device %s is already initialized'].join(log.separator), id)
   }
+}
+
+Sonoff.prototype.Execute = function (targetId, action, args) {
+  let execute = function (res, err) {
+    let target = dm.devices.get(targetId)
+    if (target) {
+    // TODO: Validate capabilities.actions and .attributes here
+      let conn = wsrv.connections.find(c => {
+        let cid = c.socket.remoteAddress + ':' + c.socket.remotePort
+        return target.cid === cid
+      })
+      if (conn) {
+        let seqid = Math.floor(new Date() / 1000).toString()
+        let req = {
+          'apikey': apiKey + target.deviceid,
+          'action': 'update',
+          'deviceid': target.deviceid,
+          'sequence': seqid,
+          'params': {'switch': action} // args should be empty
+        }
+        var r = JSON.stringify(req)
+        // we just using DM as emmiter. Not really intended to send events there
+        dm.once('sonoff-' + seqid, e => {
+          let t = dm.devices.get(e.id)
+          let r = {
+            id: t.id,
+            'attributes': [{
+              'switch': t.Status
+            }],
+            'action': action
+          }
+          res(JSON.stringify(r))
+        })
+        conn.sendText(r)
+        log.debug(['SONOFF', 'WS', 'REQ', r].join(log.separator))
+      } else {
+        log.warn(['SONOFF', 'EXECUTE', 'Connection is not found for %s'].join(log.separator), targetId)
+        err()
+      }
+    } else {
+      log.warn(['SONOFF', 'EXECUTE', 'Target %s is not found'].join(log.separator), targetId)
+      err()
+    }
+  }
+  return new Promise(execute)
 }
 
 Sonoff.prototype.Add = async function () {

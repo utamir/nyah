@@ -5,7 +5,7 @@ function FakeDevice (deviceManager) {
   if (!(this instanceof FakeDevice)) return new FakeDevice(deviceManager)
   dm = deviceManager
 
-  dm.on('action', e => {
+  dm.on('upnpaction', e => {
     for (let id of this.ids) {
       if (e.id === id) {
         handleAction(e)
@@ -28,7 +28,9 @@ function FakeDevice (deviceManager) {
 // modelurl: '', eventually leave empty
 // serialnumber: '',
     upc: '884224355040',
-    type: 'BinaryLight'
+    type: 'BinaryLight',
+    capabilities: ['switch'],
+    source: this.constructor.name
   })
   log.info('Device %s added', this.ids[0])
  // create fake event loop
@@ -57,7 +59,8 @@ function FakeDevice (deviceManager) {
 // modelurl: '', eventually leave empty
 // serialnumber: '',
       upc: '884224355041',
-      type: 'Basic'
+      type: 'Basic',
+      source: this.constructor.name
     })
     dm.emit('deviceAdded', {id: this.ids[1]})
     log.info('Device %s added', this.ids[1])
@@ -96,7 +99,7 @@ function handleAction (e) {
       break
     default: log.warn('Unknown action: %s', e.action); break
   }
-  let evt = `action-${e.eid}`
+  let evt = `upnpaction-${e.eid}`
   let eargs = {
     id: e.id,
     response: oper,

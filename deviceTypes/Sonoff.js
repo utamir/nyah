@@ -258,6 +258,24 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
     let target = dm.devices.get(targetId)
     if (target) {
     // TODO: Validate capabilities.actions and .attributes here
+      let waction, wparams
+      if (action === 'query') {
+        // waction = 'query'
+        // wparams = '[ ]'
+        // TODO: find the decent way of sending query to the device. Meanwhile, return whatever is there
+        let r = {
+          id: target.id,
+          'attributes': [{
+            'switch': target.Status
+          }],
+          'action': action
+        }
+        res(JSON.stringify(r))
+        return
+      } else {
+        waction = 'update'
+        wparams = {'switch': action} // args should be empty
+      }
       let conn = wsrv.connections.find(c => {
         let cid = c.socket.remoteAddress + ':' + c.socket.remotePort
         return target.cid === cid
@@ -266,10 +284,10 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
         let seqid = Math.floor(new Date() / 1000).toString()
         let req = {
           'apikey': apiKey + target.deviceid,
-          'action': 'update',
+          'action': waction,
           'deviceid': target.deviceid,
           'sequence': seqid,
-          'params': {'switch': action} // args should be empty
+          'params': wparams
         }
         var r = JSON.stringify(req)
         // we just using DM as emmiter. Not really intended to send events there

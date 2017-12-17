@@ -12,7 +12,7 @@ if (uid) process.setuid(uid)
 
 log.setLevel(log.levels.DEBUG)
 log.oneLine = true
-// log.noLog = ['UDP','SSDP'];
+log.noLog = ['UDP', 'SSDP']
 
 process.on('uncaughtException', err => {
   log.debug('uncaughtException')

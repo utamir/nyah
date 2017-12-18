@@ -32,7 +32,26 @@ function FakeDevice (deviceManager) {
     capabilities: ['switch'],
     source: this.constructor.name
   })
+  //dm.emit('deviceAdded', {id: this.ids[0]})
   log.info('Device %s added', this.ids[0])
+  // try fake Philips hue bridge
+  this.ids.push('e51e84ba-40f5-4a24-bf21-0a7eebb50e43')
+  dm.devices.set(this.ids[1], {
+    id: this.ids[1],
+    name: 'Fake Philips hue bridge',
+    manufacturer: 'Ipsum Domus',
+    manufacturerurl: 'http://ipsumdomus.com/',
+    desc: 'Fake Philips hue bridge to test SmartThings',
+    model: 'Philips hue bridge',
+// modelid: '',
+// modelurl: '', eventually leave empty
+    serialnumber: 'B827EB33001B',
+    upc: '99999999999',
+    type: 'Basic',
+    source: this.constructor.name
+  })
+  //dm.emit('deviceAdded', {id: this.ids[1]})
+  log.info('Device %s added', this.ids[1])
  // create fake event loop
   let fakeEvent = () => {
     let target = dm.devices.get(this.ids[0])
@@ -48,8 +67,8 @@ function FakeDevice (deviceManager) {
  // delay load next device
   setTimeout(() => {
     this.ids.push('deadbeef-fa11-abad-a555-facecafebabe')
-    dm.devices.set(this.ids[1], {
-      id: this.ids[1],
+    dm.devices.set(this.ids[2], {
+      id: this.ids[2],
       name: 'Fake Basic Device',
       manufacturer: 'Ipsum Domus',
       manufacturerurl: 'http://ipsumdomus.com/',
@@ -62,8 +81,8 @@ function FakeDevice (deviceManager) {
       type: 'Basic',
       source: this.constructor.name
     })
-    dm.emit('deviceAdded', {id: this.ids[1]})
-    log.info('Device %s added', this.ids[1])
+    dm.emit('deviceAdded', {id: this.ids[2]})
+    log.info('Device %s added', this.ids[2])
   }, 50000)
 }
 

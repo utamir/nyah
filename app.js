@@ -20,6 +20,10 @@ process.on('uncaughtException', err => {
   process.exit()
 })
 
+process.on('unhandledRejection', (reason, p) => {
+  log.debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
+})
+
 const cluster = require('cluster')
 if (cluster.isMaster) {
   cluster.fork()

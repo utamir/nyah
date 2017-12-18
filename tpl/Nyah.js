@@ -6,7 +6,7 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
     </specVersion>
     <URLBase>${baseurl}</URLBase>
     <device>
-        <deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>
+        <deviceType>urn:ipsumdomus-com:device:Nyah:1</deviceType>
         <friendlyName>${device.name}</friendlyName>
 <manufacturer>${device.manufacturer}</manufacturer>
 <manufacturerURL>${device.manufacturerurl}</manufacturerURL>
@@ -23,16 +23,15 @@ exports.get = (device, baseurl) => `<?xml version="1.0"?>
 <width>24</width>
 <height>24</height>
 <depth>32</depth>
-<url>/img/ic_developer_mode_black_24dp_1x.png</url>
+<url>/img/nyah_24dp_1x.png</url>
 </icon>
 <icon>
 <mimetype>image/png</mimetype>
-<width>48</width>
-<height>48</height>
+<width>64</width>
+<height>64</height>
 <depth>32</depth>
-<url>/img/ic_developer_mode_black_24dp_2x.png</url>
+<url>/img/nyah_24dp_2x.png</url>
 </icon>
 </iconList>
-        <presentationURL>${baseurl}/${device.id}</presentationURL>
     </device>
 </root>`

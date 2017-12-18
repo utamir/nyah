@@ -9,6 +9,7 @@ config.ap = {ssid: 'iokhome', pwd: 'Sup3rPuppy52'}
 config.mgrip = os.networkInterfaces()[config.lan].find(i => i.family === 'IPv4' && !i.internal).address
 config.mgrport = 8080
 config.mgwsport = 8081
+config.mgrmac = os.networkInterfaces()[config.lan].find(i => i.family === 'IPv4' && !i.internal).mac
 
 config.uapip = '192.168.50.1'
 // TODO: networkInterfaces does not return ALL network interfaces, only actual one. Need to replace with shell command

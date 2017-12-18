@@ -32,7 +32,7 @@ function FakeDevice (deviceManager) {
     capabilities: ['switch'],
     source: this.constructor.name
   })
-  //dm.emit('deviceAdded', {id: this.ids[0]})
+  // dm.emit('deviceAdded', {id: this.ids[0]})
   log.info('Device %s added', this.ids[0])
   // try fake Philips hue bridge
   this.ids.push('e51e84ba-40f5-4a24-bf21-0a7eebb50e43')
@@ -50,7 +50,7 @@ function FakeDevice (deviceManager) {
     type: 'Basic',
     source: this.constructor.name
   })
-  //dm.emit('deviceAdded', {id: this.ids[1]})
+  // dm.emit('deviceAdded', {id: this.ids[1]})
   log.info('Device %s added', this.ids[1])
  // create fake event loop
   let fakeEvent = () => {

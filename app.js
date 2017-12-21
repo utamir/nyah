@@ -83,9 +83,9 @@ if (cluster.isWorker) {
         let device = deviceManager.devices.get(id)
         if (device) {
           let ex = await deviceManager.action(id, ac, args)
-          res.end(ex || '{"error": {"code": 200, "message": "Unable to perform action"}}')
+          res.end(ex || `{"id": "${id}", "error": {"code": 200, "message": "Unable to perform action"}}`)
         } else {
-          res.end('{"error": {"code": 200, "message": "Unknown device"}}')
+          res.end(`{"id": "${id}", "error": {"code": 200, "message": "Unknown device"}}`)
         }
       }
     } else if (req.url.startsWith('/test')) {

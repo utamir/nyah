@@ -289,6 +289,8 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
           'sequence': seqid,
           'params': wparams
         }
+        // TODO: Find a better way to do it instead of hardcoded "on"
+        target.Target = (action === 'on')
         var r = JSON.stringify(req)
         // we just using DM as emmiter. Not really intended to send events there
         dm.once('sonoff-' + seqid, e => {

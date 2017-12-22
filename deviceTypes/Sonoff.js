@@ -163,14 +163,16 @@ var handleWSRequest = function (data, cid) {
     // device wants to update its state
         id = apiKey + data.deviceid
         target = dm.devices.get(id)
-        target.Status = (data.params.switch === 'on')
+        if (data.params.switch) {
+          target.Status = (data.params.switch === 'on')
     // sync on target status
-        target.Target = target.Status
-        dm.emit('deviceEvent', {
-          id: id,
-          key: 'Status',
-          value: target.Status
-        })
+          target.Target = target.Status
+          dm.emit('deviceEvent', {
+            id: id,
+            key: 'Status',
+            value: target.Status
+          })
+        }
         target.cid = cid
     /* if(!target.cid) {
      log.warn(['SONOFF','WS','REQ','UPDATE', 'No cid found for %j. Associating cid: %s'].join(log.separator),target,cid);
@@ -204,16 +206,17 @@ var handleWSRequest = function (data, cid) {
    target.cid = cid;
   } */
   // TODO: Here we just assing requested value to the actual
-
-    target.Status = target.Target
-    dm.emit('deviceEvent', {
-      id: id,
-      key: 'Status',
-      value: target.Status
-    })
-    dm.emit('sonoff-' + data.sequence, {
-      id: id
-    })
+    if (data.sequence) {
+      target.Status = target.Target
+      dm.emit('deviceEvent', {
+        id: id,
+        key: 'Status',
+        value: target.Status
+      })
+      dm.emit('sonoff-' + data.sequence, {
+        id: id
+      })
+    }
   }
   log.debug(['SONOFF', 'WS', 'RES', '%j'].join(log.separator), res)
   return res

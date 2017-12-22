@@ -38,7 +38,7 @@ if (cluster.isWorker) {
   log.info('Initializing NYAH on %s:%s', config.mgrip, config.mgrport)
   var tpl = utils.get
 
-  var deviceManager = require('./lib/DeviceManager')('./deviceTypes', `http://${config.mgrip}:${config.mgrport}`)
+  var deviceManager = require('./lib/DeviceManager')('./devices', `http://${config.mgrip}:${config.mgrport}`)
   let http = require('http').createServer(async function (req, res) {
     log.debug(['HTTP', 'REQ', req.url].join(log.separator))
     if (req.url === '/logs') {
@@ -189,7 +189,7 @@ if (cluster.isWorker) {
  // TODO: Handle keep alive
   let lgs = require('nodejs-websocket').createServer().listen(config.mgwsport, config.mgrip)
   process.on('log', msg => lgs.connections.forEach(c => c.sendText(msg)))
-  fs.watch('./deviceTypes', (e, f) => {
+  fs.watch('./devices', (e, f) => {
   // TODO: Make it more granular. Take into account e-eventType and f-fileName
     deviceManager.invalidate()
   })

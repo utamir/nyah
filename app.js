@@ -77,7 +77,7 @@ if (cluster.isWorker) {
       } else {
         let id = r[2]
         let ac = r[3]
-        let args = r.length === 4 ? r[4] : null
+        let args = r.length >= 4 ? r[4] : null
         res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'})
         log.info(['ACTION', ac, id].join(log.separator))
         let device = deviceManager.devices.get(id)

@@ -158,6 +158,10 @@ var handleWSRequest = function (data, cid) {
           apikey: data.apikey
         }
         initializeDevice(device)
+        res.config = {
+          'hb': 1,
+          'hbInterval': 5 // set heart bit to 5 seconds
+        }
         break
       case 'update':
     // device wants to update its state

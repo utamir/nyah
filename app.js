@@ -15,13 +15,12 @@ log.oneLine = true
 log.noLog = ['UDP', 'SSDP']
 
 process.on('uncaughtException', err => {
-  log.debug('uncaughtException')
-  log.error(err.stack)
+  log.error('!!! UNCAUGHT EXCEPTION', err.stack)
   process.exit()
 })
 
 process.on('unhandledRejection', (reason, p) => {
-  log.debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
+  log.error('!!! UNHANDLED REJECTION at: Promise', p, 'reason:', reason)
 })
 
 const cluster = require('cluster')

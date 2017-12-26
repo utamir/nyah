@@ -184,7 +184,7 @@ if (cluster.isWorker) {
       }
     }
   })
-  http.setTimeout(2000)
+  http.setTimeout(10000)
   http.listen(config.mgrport, config.mgrip)
  // TODO: Handle keep alive
   let lgs = require('nodejs-websocket').createServer().listen(config.mgwsport, config.mgrip)

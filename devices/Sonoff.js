@@ -299,8 +299,13 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
         // TODO: Find a better way to do it instead of hardcoded "on"
         target.Target = (action === 'on')
         var r = JSON.stringify(req)
+        let execTimeout = setTimeout(() => {
+          log.warn(['SONOFF', 'EXECUTE', 'Connection timeout for %s'].join(log.separator), targetId)
+          res()
+        }, 5000)
         // we just using DM as emmiter. Not really intended to send events there
         dm.once('sonoff-' + seqid, e => {
+          clearTimeout(execTimeout)
           let t = dm.devices.get(e.id)
           let r = {
             id: t.id,
@@ -315,11 +320,11 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
         log.debug(['SONOFF', 'WS', 'REQ', r].join(log.separator))
       } else {
         log.warn(['SONOFF', 'EXECUTE', 'Connection is not found for %s'].join(log.separator), targetId)
-        err()
+        res()
       }
     } else {
       log.warn(['SONOFF', 'EXECUTE', 'Target %s is not found'].join(log.separator), targetId)
-      err()
+      res()
     }
   }
   return new Promise(execute)
@@ -330,14 +335,7 @@ Sonoff.prototype.Add = async function () {
   let ap = await wlan.scan()
   let apNet = ap.find(n => n.ssid.startsWith('ITEAD-1000'))
   if (!apNet) {
-    this.pairCount = this.pairCount || 0
     log.info(['SONOFF', 'SETUP', 'No devices are not in pairing mode. Please, Long press until led start blinking fast.'].join(log.separator))
-    if (this.pairCount++ < 20) {
-      setTimeout(() => this.Add(), 1000)
-    } else {
-      log.warn(['SONOFF', 'SETUP', 'Gave up of pairing'].join(log.separator))
-      this.pairCount = 0
-    }
   } else {
     log.info(['SONOFF', 'SETUP', 'Device is found in pairing mode.'].join(log.separator))
     apNet.pwd = '12345678'

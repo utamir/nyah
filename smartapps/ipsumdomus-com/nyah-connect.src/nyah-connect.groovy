@@ -300,10 +300,20 @@ void bridgeDevicesDescriptionHandler(physicalgraph.device.HubResponse hubRespons
 private poll(){
 	def host = getBridgeIP()
     def devices = getNyahDevices()
+    def address = location.hubs[0].localIP + ":" + location.hubs[0].localSrvPortTCP
+    def extIp = address.bytes.encodeBase64()
+    log.debug "Subscribe callback $address ($extIp}"
     devices.each {
-    	def uri = "/action/${it.key}/query/"
-		log.debug "GET: $host$uri"
-		sendHubCommand(new physicalgraph.device.HubAction("GET ${uri} HTTP/1.1\r\n" +
+    //device query
+    	def uri1 = "/action/${it.key}/query/"
+		log.debug "GET: $host$uri1"
+		sendHubCommand(new physicalgraph.device.HubAction("GET ${uri1} HTTP/1.1\r\n" +
+			"HOST: ${host}\r\n\r\n", physicalgraph.device.Protocol.LAN, bridgeDevice))
+            
+    //device subscription
+    	def uri2 = "/action/${it.key}/subscribe/$extIp"
+		log.debug "SUBSCRIBE: $host$uri2"
+		sendHubCommand(new physicalgraph.device.HubAction("GET ${uri2} HTTP/1.1\r\n" +
 			"HOST: ${host}\r\n\r\n", physicalgraph.device.Protocol.LAN, bridgeDevice))
     }	
 }

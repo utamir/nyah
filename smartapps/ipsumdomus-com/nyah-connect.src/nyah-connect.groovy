@@ -415,7 +415,9 @@ private handlePoll(body) {
             state.devices[device.id]?.online = true
             body?.attributes.each {
                 log.debug "Sending $it"
-                device.sendEvent(name: "switch", value: (it.switch == true) ? "on" : "off", displayed: false)
+                if(it.switch) device.sendEvent(name: "switch", value: (it.switch == true) ? "on" : "off", displayed: false)
+                else if (it.temperature) device.sendEvent(name: "temperature", value: it.temperature, displayed: false)
+                else if (it.humidity) device.sendEvent(name: "humidity", value: it.humidity, displayed: false)
             }
         } else {
         	if (state.devices[body.id]?.online == true || state.devices[body.id]?.online == null) {

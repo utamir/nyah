@@ -10,6 +10,16 @@ exports.get = device => {
               'actions': [{'action': 'on', 'args': null}, {'action': 'off', 'args': null}]
             })
             break
+          case 'temperatureSensor':
+            capabilities.push({
+              'attributes': [{'attribute': 'temperature', 'type': 'int'}]
+            })
+            break
+          case 'humiditySensor':
+            capabilities.push({
+              'attributes': [{'attribute': 'humidity', 'type': 'int'}]
+            })
+            break
         }
       } else {
         capabilities.push(c)

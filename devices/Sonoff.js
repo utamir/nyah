@@ -177,6 +177,24 @@ var handleWSRequest = function (data, cid) {
             value: target.Status
           })
         }
+        if ((data.params.currentTemperature | data.params.currentHumidity) && data.params.sensorType !== 'ERROR_TYPE') {
+          if (data.params.currentTemperature !== 'unavailable' && target.Temperature !== data.params.currentTemperature) {
+            target.Temperature = data.params.currentTemperature
+            dm.emit('deviceEvent', {
+              id: id,
+              key: 'Temperature',
+              value: target.Temperature
+            })
+          }
+          if (data.params.currentHumidity !== 'unavailable' && target.Humidity !== data.params.currentHumidity) {
+            target.Humidity = data.params.currentHumidity
+            dm.emit('deviceEvent', {
+              id: id,
+              key: 'Humidity',
+              value: target.Humidity
+            })
+          }
+        }
         target.cid = cid
     /* if(!target.cid) {
      log.warn(['SONOFF','WS','REQ','UPDATE', 'No cid found for %j. Associating cid: %s'].join(log.separator),target,cid);
@@ -241,13 +259,18 @@ var initializeDevice = function (device) {
   // device model is already in place
     device.type = 'BinaryLight' // TODO: Replace by decent device type based on type/model rather then binary switch
     // Values can be standard:
-    // device.capabilities = ['switch']
+    device.capabilities = ['switch']
     // Or custom
-    device.capabilities = [{
+    /* device.capabilities = [{
       'attributes': [{'attribute': 'switch', 'type': 'bool'}],
       'actions': ['on', 'off']
       // alternative is [{'action': 'on'}, {'action': 'off'}]
-    }]
+    }] */
+    // HACK: PSA-BHA-GL might have also temperature and humidity sensors
+    if (device.model === 'PSA-BHA-GL') {
+      device.capabilities.push('temperatureSensor')
+      device.capabilities.push('humiditySensor')
+    }
     // END
     device.serialnumber = device.deviceid
     // TODO: automate constructor name extraction
@@ -257,6 +280,14 @@ var initializeDevice = function (device) {
     log.info(['SONOFF', 'SETUP', 'UpNP device %s is initialized'].join(log.separator), id)
   } else {
     log.info(['SONOFF', 'SETUP', 'UpNP device %s is already initialized'].join(log.separator), id)
+    // send actual target to sync device
+    let conn = wsrv.connections.find(c => {
+      let cid = c.socket.remoteAddress + ':' + c.socket.remotePort
+      return device.cid === cid
+    })
+    if (conn) {
+
+    }
   }
 }
 
@@ -277,6 +308,8 @@ Sonoff.prototype.Execute = function (targetId, action, args) {
           }],
           'action': action
         }
+        if (target.Temperature) r.attributes.push({'temperature': target.Temperature})
+        if (target.Humidity) r.attributes.push({'humidity': target.Humidity})
         res(JSON.stringify(r))
         return
       } else {

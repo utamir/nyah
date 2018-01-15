@@ -384,6 +384,13 @@ def initialize() {
     }
 }
 
+def manualRefresh() {
+    unschedule()
+	unsubscribe()
+    doDeviceSync()
+    runEvery5Minutes("doDeviceSync")
+}
+
 def uninstalled(){
 	app.updateSetting("bridgeDevice", null)
 	state.bridges = [:]
@@ -411,13 +418,18 @@ private handlePoll(body) {
                 log.debug "$device is Online"
             }
             // Mark light as "online"
-            state.devices[device.id]?.unreachableSince = null
-            state.devices[device.id]?.online = true
+            state.devices[body.id]?.unreachableSince = null
+            state.devices[body.id]?.online = true
             body?.attributes.each {
                 log.debug "Sending $it"
-                if(it.switch) device.sendEvent(name: "switch", value: (it.switch == true) ? "on" : "off", displayed: false)
-                else if (it.temperature) device.sendEvent(name: "temperature", value: it.temperature, displayed: false)
-                else if (it.humidity) device.sendEvent(name: "humidity", value: it.humidity, displayed: false)
+                def capabilities = device.capabilities.inspect()
+                def isSwitch = (it?.switch != null)
+                def isHumidity = ((it?.humidity != null) && capabilities.any { it == "Relative Humidity Measurement" })
+                def isTemperature = ((it?.temperature != null) && capabilities.any { it == "Temperature Measurement" })
+                
+                if(isSwitch) device.sendEvent(name: "switch", value: (it.switch == true) ? "on" : "off", displayed: false)
+                else if (isTemperature) device.sendEvent(name: "temperature", value: it.temperature, unit: "C", displayed: false)
+                else if (isHumidity) device.sendEvent(name: "humidity", value: it.humidity, displayed: false)
             }
         } else {
         	if (state.devices[body.id]?.online == true || state.devices[body.id]?.online == null) {
